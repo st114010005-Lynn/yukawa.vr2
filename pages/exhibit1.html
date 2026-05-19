@@ -383,7 +383,7 @@
     </blockquote>
 
     <p class="body-text">
-      這是湯川秀樹的座右銘。科學研究並非總是一帆風順的向前突破，而更似長時間在晦暗不明的狹道中摸索。即使無法預見前路，只要踏實度過每一天，便是在向前邁進。
+      這是湯川秀樹的座右銘。這段格言一方面作為自我提醒，鼓勵自己把握當下、不虛度光陰，展現湯川身為科學家的進取精神；另一方面更重新界定「前進」：科學研究並非總是一帆風順的向前突破，而更似長時間在晦暗不明的狹道中摸索。即使無法預見前路，只要踏實度過每一天，便是在向前邁進。
     </p>
 
     <div class="vline" style="height:32px; align-self:center;"></div>
@@ -418,20 +418,18 @@
 
   <!-- 問題 -->
   <div class="question-main fu-3">
-    <h3>在這樣令人灰心的情況下，<br>你心中浮現的想法是？</h3>
+    <h3>在這樣令人灰心的情況下，你心中浮現的想法是？</h3>
   </div>
 
   <!-- 選項 -->
   <div class="options fu-4">
     <button class="option-btn" id="option-a" onclick="selectOption('A')">
       <span class="option-tag">選 項 A</span>
-      <span class="option-type">結 果 導 向</span>
-      <span class="option-text">「得不到成果也許是方向錯了，我應該換一條路試試。」</span>
+      <span class="option-text">「只要每天都堅持比昨天多做一點，就會有進展。」</span>
     </button>
     <button class="option-btn" id="option-b" onclick="selectOption('B')">
       <span class="option-tag">選 項 B</span>
-      <span class="option-type">湯 川 型 · 過 程 導 向</span>
-      <span class="option-text">「只要每天都堅持比昨天多做一點，就會有進展。」</span>
+      <span class="option-text">「得不到成果也許是方向錯了，我應該換一條路試試。」</span>
     </button>
   </div>
 
@@ -560,7 +558,7 @@
 
     /* 計分：選B才加分 */
     let point = parseInt(sessionStorage.getItem('point') || '0');
-    if (selectedOption === 'B') point += 1;
+    if (selectedOption === 'A') point += 1;
     sessionStorage.setItem('point', String(point));
 
     /* 記錄拼圖 */
@@ -568,15 +566,15 @@
 
     /* 設定拼圖頁的文字內容 */
     if (selectedOption === 'B') {
-      document.getElementById('response-text').textContent =
-        '你與湯川一樣，相信「過程本身即是意義」。科學的道路從不筆直，湯川在黑暗中摸索的每一天，都是他的格言的實踐——踏實活著，便是前進。';
+      document.getElementById('response-text').innerHTML =
+        '<strong style="color:var(--gold-light);">實務派</strong><br><br>湯川的選擇不同——他從未因為看不見終點而轉向，而是把「活過這一天」本身當成答案。也許你們的道路不同，但此刻你理解了他為何能在黑暗中堅持。';
       document.getElementById('puzzle-story-text').innerHTML =
-        '回答的瞬間，書房的燈光微微閃爍。桌角一個被壓在舊書稿下的暗色碎片悄悄滑落地板——<br><br>那是一塊深沉的黑色拼圖，邊緣像是被時光磨損過。你撿起它，感覺到一股細微的溫熱從掌心傳來，像是有人握過這裡很久很久。';
+        '回答的瞬間，書房的燈光微微閃爍。桌角一個被壓在舊書稿下的暗色碎片悄悄滑落地板——<br><br>那是一塊深沉的拼圖，邊緣像是被時光磨損過。你撿起它，感覺到一股細微的溫熱從掌心傳來，像是有人握過這裡很久很久。';
     } else {
-      document.getElementById('response-text').textContent =
-        '湯川的選擇不同——他從未因為看不見終點而轉向，而是把「活過這一天」本身當成答案。也許你們的道路不同，但此刻你理解了他為何能在黑暗中堅持。';
+      document.getElementById('response-text').innerHTML =
+        '<strong style="color:var(--gold-light);">湯川型 · 理想派</strong><br><br>你與湯川一樣，相信「過程本身即是意義」。科學的道路從不筆直，湯川在黑暗中摸索的每一天，都是他的格言的實踐——踏實活著，便是前進。';
       document.getElementById('puzzle-story-text').innerHTML =
-        '你凝視著那段格言良久，沉默在書房裡蔓延。就在你準備離開時，地板縫隙中有什麼東西反射了一點微光——<br><br>一塊黑色拼圖，靜靜等在那裡，彷彿無論誰來，它都準備好了。你把它放進口袋。';
+        '你凝視著那段格言良久，沉默在書房裡蔓延。就在你準備離開時，地板縫隙中有什麼東西反射了一點微光——<br><br>一塊拼圖，靜靜等在那裡，彷彿無論誰來，它都準備好了。你把它放進口袋。';
     }
 
     goToScreen('screen-puzzle');
