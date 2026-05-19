@@ -3,25 +3,25 @@
 ```
 時空探員之旅/
 │
-├── index.html              ← 入口頁（邀請函 → 靈魂掃描 → 身分分配）✅ 已完成
+├── index.html              ← 入口頁（邀請函 → 靈魂掃描 → 身分分配）🈶 還有對齊的框
 │
 ├── pages/
-│   ├── exhibit1.html       ← 展品一：〈一日生きる〉 ✅ 已完成（模板）
-│   ├── exhibit2.html       ← 展品二：〈見渡せば〉
-│   ├── exhibit3.html       ← 展品三：《世界は一つ》
-│   ├── exhibit4.html       ← 展品四：《知魚樂》
-│   └── result.html         ← 結果頁（拼圖動畫 + 融合照片 + 靈魂匹配度）
+│   ├── exhibit1.html       ← 展品一：〈一日生きる〉 🈶 剩題目要改
+│   ├── exhibit2.html       ← 展品二：〈見渡せば〉✅
+│   ├── exhibit3.html       ← 展品三：《世界は一つ》✅
+│   ├── exhibit4.html       ← 展品四：《知魚樂》✅
+│   └── result.html         ← 結果頁（拼圖動畫 + 融合照片 + 靈魂匹配度）🈶 完全還沒有處理
 │
 ├── css/
 │   └── style.css           ← 共用樣式（未來可把各頁重複的 CSS 集中這裡）
 │
 ├── js/
-│   ├── camera.js           ← 相機 / 靈魂掃描功能
-│   ├── game.js             ← 計分邏輯（point 累積）
-│   └── puzzle.js           ← 拼圖收集與動畫
+│   ├── camera.js           ← 相機 / 靈魂掃描功能 🈶 待合併
+│   ├── game.js             ← 計分邏輯（point 累積）🈶 待合併
+│   └── puzzle.js           ← 拼圖收集與動畫 🈶 待合併
 │
 ├── assets/
-│   ├── images/             ← 展品圖片、湯川照片、拼圖碎片圖
+│   ├── images/             ← 展品圖片、湯川照片、拼圖碎片圖 🈶 地圖
 │   ├── videos/             ← 各展品 AI 生成影片
 │   │   ├── exhibit1.mp4    ← 〈一日生きる〉情境影片
 │   │   ├── exhibit2.mp4    ← 〈見渡せば〉情境影片
