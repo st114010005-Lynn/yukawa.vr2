@@ -21,7 +21,13 @@
 │   └── puzzle.js           ← 拼圖收集與動畫 🈶 待合併
 │
 ├── assets/
-│   ├── images/             ← 展品圖片、湯川照片、拼圖碎片圖 🈶 地圖
+│   ├── images/
+│   │   ├── map.png             ← 地圖(總) ✅
+│   │   ├── map.exhibit1.png    ← 地圖(展品一) ✅
+│   │   ├── map.exhibit2.png    ← 地圖(展品二) ✅
+│   │   ├── map.exhibit3.png    ← 地圖(展品三) ✅
+│   │   ├── map.exhibit4.png    ← 地圖(展品四) ✅
+│   │   ├── yukawa.png/jpg      ← 湯川秀樹
 │   ├── videos/             ← 各展品 AI 生成影片
 │   │   ├── exhibit1.mp4    ← 〈一日生きる〉情境影片
 │   │   ├── exhibit2.mp4    ← 〈見渡せば〉情境影片
