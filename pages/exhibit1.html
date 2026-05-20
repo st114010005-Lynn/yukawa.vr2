@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>展品一：〈一日生きる〉— 時空探員之旅</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;700&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:       #14243e;
+      --navy-mid:   #1c3154;
+      --navy-light: #243d68;
+      --gold:       #b8963e;
+      --gold-light: #d4af6a;
+      --cream:      #f4ede0;
+      --cream-dark: #e2d5be;
+      --ink:        #2a1f0e;
+      --muted:      #8a7d68;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: var(--navy);
+      font-family: 'Noto Serif TC', serif;
+      overflow-x: hidden;
+    }
+
+    /* 粒子 */
+    #particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .particle {
+      position: absolute; width: 2px; height: 2px;
+      background: var(--gold); border-radius: 50%; opacity: 0;
+      animation: float-up linear infinite;
+    }
+    @keyframes float-up {
+      0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+      10%  { opacity: 0.5; }
+      90%  { opacity: 0.15; }
+      100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+    }
+
+    /* 進度條 */
+    .progress-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 3px; background: rgba(184,150,62,0.12);
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--gold), var(--gold-light));
+      width: 25%; /* 展品一 = 1/4 */
+      transition: width 0.6s ease;
+    }
+    /* 步驟指示點 */
+    .progress-dots {
+      position: fixed; top: 16px; right: 20px; z-index: 100;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      border: 1px solid rgba(184,150,62,0.5);
+      background: transparent; transition: all 0.3s;
+    }
+    .dot.active { background: var(--gold); border-color: var(--gold); }
+    .dot.done   { background: rgba(184,150,62,0.4); border-color: var(--gold); }
+
+    /* 畫面切換 */
+    .screen {
+      display: none; position: relative; z-index: 1;
+      min-height: 100vh; flex-direction: column;
+      align-items: center; padding: 80px 24px 60px;
+      animation: screen-in 0.7s ease both;
+    }
+    .screen.active { display: flex; }
+    @keyframes screen-in {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 共用 */
+    .label { font-size: 11px; letter-spacing: 5px; color: var(--gold); opacity: 0.85; }
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(22px, 4.5vw, 38px);
+      color: var(--cream); text-align: center; letter-spacing: 3px; line-height: 1.3;
+    }
+    .body-text {
+      font-size: 14px; line-height: 2.2; color: var(--cream-dark);
+      letter-spacing: 1px; font-weight: 300;
+    }
+    .vline { width: 1px; background: linear-gradient(to bottom, transparent, var(--gold), transparent); }
+    .hline { height: 1px; background: linear-gradient(to right, transparent, var(--gold), transparent); width: 100%; max-width: 360px; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 10px; padding: 14px 32px; border-radius: 2px;
+      font-family: 'Noto Serif TC', serif; font-size: 14px;
+      letter-spacing: 4px; cursor: pointer; transition: all 0.28s ease;
+      text-decoration: none; border: none;
+    }
+    .btn-gold { background: var(--gold); color: var(--ink); font-weight: 700; }
+    .btn-gold:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(184,150,62,0.35); }
+    .btn-outline { background: transparent; border: 1px solid rgba(184,150,62,0.45); color: var(--cream); font-weight: 400; }
+    .btn-outline:hover { border-color: var(--gold); background: rgba(184,150,62,0.08); }
+
+    .card-frame {
+      position: relative; padding: 32px 28px;
+      border: 1px solid rgba(184,150,62,0.22);
+      background: rgba(20,36,62,0.6);
+      backdrop-filter: blur(10px);
+      width: 100%; max-width: 480px;
+    }
+    .card-frame .c { position: absolute; width: 18px; height: 18px; }
+    .card-frame .c.tl { top:-1px; left:-1px; border-top:2px solid var(--gold); border-left:2px solid var(--gold); }
+    .card-frame .c.tr { top:-1px; right:-1px; border-top:2px solid var(--gold); border-right:2px solid var(--gold); }
+    .card-frame .c.bl { bottom:-1px; left:-1px; border-bottom:2px solid var(--gold); border-left:2px solid var(--gold); }
+    .card-frame .c.br { bottom:-1px; right:-1px; border-bottom:2px solid var(--gold); border-right:2px solid var(--gold); }
+
+    /* ─── 畫面1：影片 ─── */
+    #screen-video { gap: 0; justify-content: flex-start; }
+
+    .exhibit-header {
+      text-align: center;
+      display: flex; flex-direction: column; gap: 14px; align-items: center;
+      margin-bottom: 36px; width: 100%; max-width: 480px;
+    }
+    .exhibit-number {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 11px; letter-spacing: 5px; color: var(--gold);
+    }
+    .exhibit-number::before,
+    .exhibit-number::after { content: ''; width: 28px; height: 1px; background: var(--gold); opacity: 0.5; }
+
+    /* 影片容器 */
+    .video-wrap {
+      width: 100%; max-width: 480px;
+      position: relative;
+      background: #000;
+      border: 1px solid rgba(184,150,62,0.2);
+    }
+    .video-wrap video {
+      width: 100%; display: block;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+    }
+    /* 影片佔位（未放影片時）*/
+    .video-placeholder {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: rgba(20,36,62,0.9);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 14px;
+      border: 1px dashed rgba(184,150,62,0.25);
+    }
+    .video-placeholder-icon { font-size: 40px; opacity: 0.3; }
+    .video-placeholder p { font-size: 12px; color: var(--muted); font-weight: 700; letter-spacing: 3px; }
+    /* 影片載入後才顯示播放按鈕覆蓋 */
+    .video-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.35);
+      transition: opacity 0.3s;
+      cursor: pointer;
+    }
+    .video-overlay.hidden { opacity: 0; pointer-events: none; }
+    .play-btn-big {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(184,150,62,0.85);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; color: var(--ink);
+      transition: transform 0.2s;
+    }
+    .play-btn-big:hover { transform: scale(1.1); }
+
+    /* 影片說明 */
+    .video-caption {
+      width: 100%; max-width: 480px;
+      padding: 12px 16px;
+      background: rgba(28,49,84,0.5);
+      border-left: 2px solid var(--gold);
+      margin-top: 2px;
+    }
+    .video-caption p { font-size: 12px; color: var(--muted); font-weight: 700; letter-spacing: 2px; line-height: 1.8; }
+
+    /* 展品說明文字 */
+    .exhibit-desc {
+      width: 100%; max-width: 480px;
+      display: flex; flex-direction: column; gap: 16px;
+      margin-top: 28px;
+    }
+    .exhibit-desc .work-title {
+      font-family: 'Cinzel', serif;
+      font-size: 18px; color: var(--gold-light); letter-spacing: 3px;
+    }
+    .exhibit-desc .work-subtitle {
+      font-size: 12px; color: var(--muted); font-weight: 700; letter-spacing: 3px; margin-top: -8px;
+    }
+    .exhibit-desc blockquote {
+      border-left: 2px solid var(--gold);
+      padding: 12px 18px;
+      background: rgba(28,49,84,0.35);
+      font-size: 15px; color: var(--cream);
+      font-style: italic; letter-spacing: 2px; line-height: 2;
+    }
+
+    /* ─── 畫面2：問答 ─── */
+    #screen-question { gap: 32px; justify-content: center; }
+
+    .question-context {
+      width: 100%; max-width: 480px;
+      padding: 20px 24px;
+      background: rgba(28,49,84,0.45);
+      border-top: 1px solid rgba(184,150,62,0.2);
+      border-bottom: 1px solid rgba(184,150,62,0.2);
+    }
+    .question-context p { font-size: 13px; line-height: 2.2; color: var(--cream-dark); letter-spacing: 1px; font-weight: 300; }
+
+    .question-main {
+      width: 100%; max-width: 480px;
+      text-align: center;
+    }
+    .question-main h3 {
+      font-size: 15px; color: var(--cream); line-height: 2;
+      letter-spacing: 1.5px; font-weight: 400;
+    }
+
+    /* 選項按鈕 */
+    .options { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 12px; }
+    .option-btn {
+      width: 100%; padding: 20px 24px;
+      background: rgba(20,36,62,0.7);
+      border: 1px solid rgba(184,150,62,0.2);
+      border-radius: 2px;
+      text-align: left; cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex; flex-direction: column; gap: 6px;
+      font-family: 'Noto Serif TC', serif;
+    }
+    .option-btn:hover {
+      border-color: var(--gold);
+      background: rgba(184,150,62,0.08);
+      transform: translateX(4px);
+    }
+    .option-btn.selected-a {
+      border-color: rgba(184,150,62,0.4);
+      background: rgba(184,150,62,0.06);
+    }
+    .option-btn.selected-b {
+      border-color: var(--gold);
+      background: rgba(184,150,62,0.12);
+      transform: translateX(0);
+    }
+    .option-tag {
+      font-size: 10px; letter-spacing: 4px;
+      color: var(--gold); margin-bottom: 2px;
+    }
+    .option-type { font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: 3px; }
+    .option-text { font-size: 14px; color: var(--cream); letter-spacing: 1px; line-height: 1.7; font-weight: 300; }
+
+    /* ─── 畫面3：撿到拼圖 ─── */
+    #screen-puzzle { gap: 36px; justify-content: center; }
+
+    /* 拼圖碎片 */
+    .puzzle-piece {
+      width: 120px; height: 120px;
+      position: relative;
+      animation: puzzle-appear 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+    @keyframes puzzle-appear {
+      0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+      60%  { transform: scale(1.1) rotate(3deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .puzzle-svg { width: 100%; height: 100%; }
+
+    /* 拼圖收集格 */
+    .puzzle-collected {
+      display: flex; gap: 10px; align-items: center; justify-content: center;
+    }
+    .puzzle-slot {
+      width: 36px; height: 36px;
+      border: 1px solid rgba(184,150,62,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      transition: all 0.4s;
+    }
+    .puzzle-slot.filled {
+      border-color: var(--gold);
+      background: rgba(184,150,62,0.1);
+    }
+
+    .puzzle-story {
+      width: 100%; max-width: 460px;
+      padding: 24px 26px;
+      border-left: 2px solid var(--gold);
+      background: rgba(28,49,84,0.4);
+    }
+    .puzzle-story .story-label { font-size: 10px; letter-spacing: 4px; color: var(--gold); margin-bottom: 12px; }
+    .puzzle-story p { font-size: 14px; line-height: 2.2; color: var(--cream-dark); letter-spacing: 1px; font-weight: 300; }
+
+    /* 響應文字 */
+    .response-box {
+      width: 100%; max-width: 460px;
+      padding: 18px 22px;
+      background: rgba(184,150,62,0.07);
+      border: 1px solid rgba(184,150,62,0.25);
+    }
+    .response-box .resp-label { font-size: 10px; letter-spacing: 4px; color: var(--gold); margin-bottom: 10px; }
+    .response-box p { font-size: 13px; line-height: 2; color: var(--cream-dark); letter-spacing: 1px; font-weight: 300; }
+
+    /* 動畫 */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fu-1 { animation: fade-up 0.6s ease 0.1s both; }
+    .fu-2 { animation: fade-up 0.6s ease 0.3s both; }
+    .fu-3 { animation: fade-up 0.6s ease 0.5s both; }
+    .fu-4 { animation: fade-up 0.6s ease 0.7s both; }
+    .fu-5 { animation: fade-up 0.6s ease 0.9s both; }
+  </style>
+</head>
+<body>
+
+<div id="particles"></div>
+
+<!-- 進度條 -->
+<div class="progress-bar"><div class="progress-fill"></div></div>
+<div class="progress-dots">
+  <div class="dot active" title="展品一"></div>
+  <div class="dot" title="展品二"></div>
+  <div class="dot" title="展品三"></div>
+  <div class="dot" title="展品四"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     畫面0：地圖確認
+══════════════════════════════════════ -->
+<div class="screen active" id="screen-map">
+
+  <div style="text-align:center; display:flex; flex-direction:column; gap:12px; align-items:center;" class="fu-1">
+    <span class="label">CURRENT LOCATION · 當 前 位 置</span>
+    <h2 class="section-title" style="font-size:clamp(18px,3.5vw,28px);">展品一 · 一日生きる事は</h2>
+  </div>
+
+  <div class="hline fu-2"></div>
+
+  <div class="fu-2" style="width:100%; max-width:480px; display:flex; flex-direction:column; align-items:center; gap:16px;">
+    <img
+      src="../assets/images/map.exhibit1.png"
+      alt="展品一位置地圖"
+      style="width:100%; border:1px solid rgba(184,150,62,0.35); display:block;"
+    />
+    <p class="body-text" style="text-align:center; font-size:12px; color:var(--muted);">
+      ★ 標示處為展品一所在位置
+    </p>
+  </div>
+
+  <div class="hline fu-3"></div>
+
+  <div class="fu-4" style="text-align:center;">
+    <button class="btn btn-gold" onclick="goToScreen('screen-video')">
+      ✦ &ensp; 確 認 前 往
+    </button>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════
+     畫面1：影片 + 展品說明
+══════════════════════════════════════ -->
+<div class="screen" id="screen-video">
+
+  <!-- 標題 -->
+  <div class="exhibit-header fu-1">
+    <div class="exhibit-number">展品一 · EXHIBIT ONE</div>
+    <h1 class="section-title">一日生きる事は</h1>
+    <p class="label">重 新 界 定「前 進」</p>
+  </div>
+
+  <!-- 影片區 -->
+  <div class="video-wrap fu-2">
+    <!--
+      【影片放置說明】
+      把 AI 生成的影片存成 exhibit1.mp4，放進 assets/videos/ 資料夾，
+      然後把下面的 <div class="video-placeholder"> 整段刪掉，
+      換成：
+      <video controls autoplay muted loop playsinline>
+        <source src="../assets/videos/exhibit1.mp4" type="video/mp4">
+      </video>
+    -->
+    <div class="video-placeholder">
+      <div class="video-placeholder-icon">▶</div>
+      <p>〈一日生きる〉情境影片</p>
+      <p style="font-size:10px; margin-top:-6px; opacity:0.6;">將影片檔案放入 assets/videos/exhibit1.mp4</p>
+    </div>
+  </div>
+
+  <!-- 影片說明 -->
+  <div class="video-caption fu-2">
+    <p>穿越至 1949 年 · 湯川秀樹的書房 · 夜深</p>
+  </div>
+
+  <!-- 展品介紹 -->
+  <div class="exhibit-desc fu-3">
+    <div class="vline" style="height:40px; align-self:center;"></div>
+
+    <div>
+      <p class="work-title">〈一日生きる事は〉</p>
+      <p class="work-subtitle">格言 · 湯川秀樹座右銘</p>
+    </div>
+
+    <blockquote>
+      願我度過的每一天，<br>都能成為向前邁進的一步。
+    </blockquote>
+
+    <p class="body-text">
+      這是湯川秀樹的座右銘。這段格言一方面作為自我提醒，鼓勵自己把握當下、不虛度光陰，展現湯川身為科學家的進取精神；另一方面更重新界定「前進」：科學研究並非總是一帆風順的向前突破，而更似長時間在晦暗不明的狹道中摸索。即使無法預見前路，只要踏實度過每一天，便是在向前邁進。
+    </p>
+
+    <div class="vline" style="height:32px; align-self:center;"></div>
+  </div>
+
+  <!-- 前往問答 -->
+  <div style="margin-top:8px;" class="fu-4">
+    <button class="btn btn-gold" onclick="goToScreen('screen-question')">
+      ✦ &ensp; 回 應 湯 川 的 問 題
+    </button>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════
+     畫面2：問答
+══════════════════════════════════════ -->
+<div class="screen" id="screen-question">
+
+  <div style="text-align:center; display:flex; flex-direction:column; gap:12px; align-items:center;" class="fu-1">
+    <span class="label">SOUL RESONANCE TEST · 展品一</span>
+    <h2 class="section-title" style="font-size:clamp(18px,3.5vw,28px);">當努力變得沒有回音時</h2>
+  </div>
+
+  <!-- 情境說明 -->
+  <div class="question-context fu-2">
+    <p>
+      這幾年來，湯川秀樹的世界只剩下計算紙上無休止的算式，與深夜裡空無一人的研究室。每一次的數學推導都讓他覺得自己離答案更近了一步，但時間一天天過去，這些努力仍然毫無回音。
+      身邊同儕都已陸續發表論文、在學術界展露頭角，自己卻長達數年毫無產出。
+    </p>
+  </div>
+
+  <!-- 問題 -->
+  <div class="question-main fu-3">
+    <h3>在這樣令人灰心的情況下，你心中浮現的想法是？</h3>
+  </div>
+
+  <!-- 選項 -->
+  <div class="options fu-4">
+    <button class="option-btn" id="option-a" onclick="selectOption('A')">
+      <span class="option-tag">選 項 A</span>
+      <span class="option-text">「只要每天都堅持比昨天多做一點，就會有進展。」</span>
+    </button>
+    <button class="option-btn" id="option-b" onclick="selectOption('B')">
+      <span class="option-tag">選 項 B</span>
+      <span class="option-text">「得不到成果也許是方向錯了，我應該換一條路試試。」</span>
+    </button>
+  </div>
+
+  <!-- 確認按鈕（選完才出現）-->
+  <div id="confirm-btn" style="display:none; margin-top:8px;" class="fu-5">
+    <button class="btn btn-gold" onclick="confirmChoice()">
+      確 認 選 擇 &ensp; →
+    </button>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════
+     畫面3：撿到拼圖
+══════════════════════════════════════ -->
+<div class="screen" id="screen-puzzle">
+
+  <div style="text-align:center; display:flex; flex-direction:column; gap:10px; align-items:center;" class="fu-1">
+    <span class="label">PUZZLE FRAGMENT · 第 一 塊</span>
+    <h2 class="section-title" style="font-size:clamp(18px,3.5vw,28px);">你撿到了一塊拼圖</h2>
+  </div>
+
+  <!-- 拼圖碎片 SVG -->
+  <div class="puzzle-piece fu-2">
+    <svg class="puzzle-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <!-- 拼圖形狀（左上角碎片）-->
+      <path d="
+        M 10 10
+        L 50 10
+        Q 55 10 55 15
+        Q 55 30 70 30
+        Q 85 30 85 15
+        Q 85 10 90 10
+        L 110 10
+        L 110 50
+        Q 110 55 105 55
+        Q 90 55 90 70
+        Q 90 85 105 85
+        Q 110 85 110 90
+        L 110 110
+        L 10 110
+        Z
+      " fill="#b8963e" opacity="0.85"/>
+      <!-- 編號 -->
+      <text x="60" y="68" text-anchor="middle" font-size="28" fill="#2a1f0e" font-family="serif" font-weight="bold">一</text>
+      <!-- 光澤 -->
+      <path d="M 10 10 L 50 10 Q 55 10 55 15 Q 55 30 70 30 Q 85 30 85 15 Q 85 10 90 10 L 110 10 L 110 30 L 10 30 Z"
+        fill="white" opacity="0.08"/>
+    </svg>
+  </div>
+
+  <!-- 拼圖收集狀態 -->
+  <div class="puzzle-collected fu-3">
+    <div class="puzzle-slot filled" title="展品一">一</div>
+    <div class="puzzle-slot" title="展品二">二</div>
+    <div class="puzzle-slot" title="展品三">三</div>
+    <div class="puzzle-slot" title="展品四">四</div>
+  </div>
+
+  <!-- 策展響應文字（根據選項A或B顯示不同）-->
+  <div class="response-box fu-3" id="response-box">
+    <p class="resp-label">策 展 解 說</p>
+    <p id="response-text">載入中⋯</p>
+  </div>
+
+  <!-- 撿到拼圖的故事情境 -->
+  <div class="puzzle-story fu-4">
+    <p class="story-label">◆ 場 景 記 錄</p>
+    <p id="puzzle-story-text">載入中⋯</p>
+  </div>
+
+  <!-- 前往下一站 -->
+  <div style="text-align:center; display:flex; flex-direction:column; gap:10px; align-items:center;" class="fu-5">
+    <div class="vline" style="height:32px;"></div>
+    <span style="font-size:11px; color:var(--muted); font-weight: 700; letter-spacing:3px;">下 一 站</span>
+    <button class="btn btn-gold" onclick="goToNext()">
+      前 往 展 品 二 &ensp; →
+    </button>
+  </div>
+
+</div>
+
+
+<script>
+  /* 粒子 */
+  (function() {
+    const c = document.getElementById('particles');
+    for (let i = 0; i < 22; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.animationDuration = (7 + Math.random() * 10) + 's';
+      p.style.animationDelay = (Math.random() * 9) + 's';
+      const sz = (1 + Math.random() * 2) + 'px';
+      p.style.width = p.style.height = sz;
+      c.appendChild(p);
+    }
+  })();
+
+  /* 畫面切換 */
+  function goToScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  /* 選項邏輯 */
+  let selectedOption = null;
+
+  function selectOption(choice) {
+    selectedOption = choice;
+    document.getElementById('option-a').classList.remove('selected-a', 'selected-b');
+    document.getElementById('option-b').classList.remove('selected-a', 'selected-b');
+    if (choice === 'A') {
+      document.getElementById('option-a').classList.add('selected-a');
+    } else {
+      document.getElementById('option-b').classList.add('selected-b');
+    }
+    document.getElementById('confirm-btn').style.display = 'flex';
+    document.getElementById('confirm-btn').style.justifyContent = 'center';
+  }
+
+  function confirmChoice() {
+    if (!selectedOption) return;
+
+    /* 計分：選B才加分 */
+    let point = parseInt(sessionStorage.getItem('point') || '0');
+    if (selectedOption === 'A') point += 1;
+    sessionStorage.setItem('point', String(point));
+
+    /* 記錄拼圖 */
+    sessionStorage.setItem('puzzle1', 'true');
+
+    /* 設定拼圖頁的文字內容 */
+    if (selectedOption === 'B') {
+      document.getElementById('response-text').innerHTML =
+        '<strong style="color:var(--gold-light);">結果導向</strong><br><br>湯川的選擇不同——他從未因為看不見終點而轉向，而是把「活過這一天」本身當成答案。也許你們的道路不同，但此刻你理解了他為何能在黑暗中堅持。';
+      document.getElementById('puzzle-story-text').innerHTML =
+        '回答的瞬間，書房的燈光微微閃爍。桌角一個被壓在舊書稿下的暗色碎片悄悄滑落地板——<br><br>那是一塊深沉的拼圖，邊緣像是被時光磨損過。你撿起它，感覺到一股細微的溫熱從掌心傳來，像是有人握過這裡很久很久。';
+    } else {
+      document.getElementById('response-text').innerHTML =
+        '<strong style="color:var(--gold-light);">湯川型 · 過程導向</strong><br><br>你與湯川一樣，相信「過程本身即是意義」。科學的道路從不筆直，湯川在黑暗中摸索的每一天，都是他的格言的實踐——踏實活著，便是前進。';
+      document.getElementById('puzzle-story-text').innerHTML =
+        '你凝視著那段格言良久，沉默在書房裡蔓延。就在你準備離開時，地板縫隙中有什麼東西反射了一點微光——<br><br>一塊拼圖，靜靜等在那裡，彷彿無論誰來，它都準備好了。你把它放進口袋。';
+    }
+
+    goToScreen('screen-puzzle');
+  }
+
+  /* 前往下一展品 */
+  function goToNext() {
+    window.location.href = 'exhibit2.html';
+  }
+</script>
+</body>
+</html>
