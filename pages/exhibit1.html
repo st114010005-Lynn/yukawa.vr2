@@ -333,6 +333,61 @@
   <div class="dot" title="展品四"></div>
 </div>
 
+<!-- ===== 地圖畫面 ===== -->
+<section id="map-screen" style="
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #0d1b3e;
+  padding: 2rem;
+  box-sizing: border-box;
+  text-align: center;
+">
+  <p style="color: #c9a84c; letter-spacing: 0.2em; font-size: 0.85rem; margin-bottom: 0.5rem;">
+    LOCATION · 當前位置
+  </p>
+  <h2 style="color: #fff; font-size: 1.2rem; margin-bottom: 1.5rem; letter-spacing: 0.1em;">
+    展品一 ——〈一日生きる〉
+  </h2>
+
+  <!-- 地圖圖片，請換成對應展品的地圖 -->
+  <img
+    src="../assets/images/map.exhibit1.png"
+    alt="展品一地圖"
+    style="max-width: 100%; width: 340px; border: 1px solid #c9a84c; border-radius: 4px; margin-bottom: 2rem;"
+  />
+
+  <button id="map-confirm-btn" style="
+    background: transparent;
+    border: 1px solid #c9a84c;
+    color: #c9a84c;
+    padding: 0.8rem 2.5rem;
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+  "
+  onmouseover="this.style.background='#c9a84c'; this.style.color='#0d1b3e';"
+  onmouseout="this.style.background='transparent'; this.style.color='#c9a84c';"
+  >
+    ✦ 確 認 前 往
+  </button>
+</section>
+
+<!-- ===== 展品內容（預設隱藏）===== -->
+<div id="exhibit-content" style="display: none;">
+  <!-- 原本 exhibit1.html 的所有內容放這裡 -->
+</div>
+
+<script>
+  document.getElementById('map-confirm-btn').addEventListener('click', function () {
+    document.getElementById('map-screen').style.display = 'none';
+    document.getElementById('exhibit-content').style.display = 'block';
+    window.scrollTo(0, 0);
+  });
+</script>
 
 <!-- ══════════════════════════════════════
      畫面1：影片 + 展品說明
