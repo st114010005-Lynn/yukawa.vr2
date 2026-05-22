@@ -379,20 +379,9 @@
 
   <!-- 影片區 -->
   <div class="video-wrap fu-2">
-    <!--
-      【影片放置說明】
-      把 AI 生成的影片存成 exhibit1.mp4，放進 assets/videos/ 資料夾，
-      然後把下面的 <div class="video-placeholder"> 整段刪掉，
-      換成：
-      <video controls autoplay muted loop playsinline>
-        <source src="../assets/videos/exhibit1.mp4" type="video/mp4">
-      </video>
-    -->
-    <div class="video-placeholder">
-      <div class="video-placeholder-icon">▶</div>
-      <p>《知魚樂》情境影片</p>
-      <p style="font-size:10px; margin-top:-6px; opacity:0.6;">將影片檔案放入 assets/videos/exhibit4.mp4</p>
-    </div>
+    <video controls autoplay muted loop playsinline>
+        <source src="../assets/videos/exhibit4.mp4" type="video/mp4">
+    </video>
   </div>
 
   <!-- 影片說明 -->
@@ -577,9 +566,9 @@
   function confirmChoice() {
     if (!selectedOption) return;
 
-    let point = parseInt(sessionStorage.getItem('point') || '0');
-    if (selectedOption === 'A') point += 1;
-    sessionStorage.setItem('point', String(point));
+    let score = parseFloat(sessionStorage.getItem('score') || '0');
+         score += selectedOption === 'A' ? 1.0 : 0.5;
+         sessionStorage.setItem('score', String(score));
     sessionStorage.setItem('puzzle4', 'true');
 
     if (selectedOption === 'A') {

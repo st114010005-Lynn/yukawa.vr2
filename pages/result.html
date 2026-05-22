@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>靈魂匹配結果 — 時空探員之旅</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;700&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:       #14243e;
+      --navy-mid:   #1c3154;
+      --gold:       #b8963e;
+      --gold-light: #d4af6a;
+      --cream:      #f4ede0;
+      --cream-dark: #e2d5be;
+      --ink:        #2a1f0e;
+      --muted:      #8a7d68;
+      --success:    #4a9e7a;
+      --fail:       #9e4a4a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: var(--navy);
+      font-family: 'Noto Serif TC', serif;
+      overflow-x: hidden;
+    }
+
+    /* 粒子 */
+    #particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .particle {
+      position: absolute; width: 2px; height: 2px;
+      background: var(--gold); border-radius: 50%; opacity: 0;
+      animation: float-up linear infinite;
+    }
+    @keyframes float-up {
+      0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+      10%  { opacity: 0.5; }
+      90%  { opacity: 0.15; }
+      100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+    }
+
+    /* 進度條（滿格）*/
+    .progress-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 3px; background: rgba(184,150,62,0.12); }
+    .progress-fill { height: 100%; background: linear-gradient(to right, var(--gold), var(--gold-light)); width: 100%; }
+    .progress-dots { position: fixed; top: 16px; right: 20px; z-index: 100; display: flex; gap: 8px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgba(184,150,62,0.5); background: rgba(184,150,62,0.4); }
+
+    /* 畫面切換 */
+    .screen {
+      display: none; position: relative; z-index: 1;
+      min-height: 100vh; flex-direction: column;
+      align-items: center; padding: 80px 24px 60px;
+      animation: screen-in 0.8s ease both;
+    }
+    .screen.active { display: flex; }
+    @keyframes screen-in {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 共用 */
+    .label { font-size: 11px; letter-spacing: 5px; color: var(--gold); opacity: 0.85; }
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(20px,4vw,36px);
+      color: var(--cream); text-align: center; letter-spacing: 3px; line-height: 1.3;
+    }
+    .body-text { font-size: 14px; line-height: 2.2; color: var(--cream-dark); letter-spacing: 1px; font-weight: 300; }
+    .vline { width: 1px; background: linear-gradient(to bottom, transparent, var(--gold), transparent); }
+    .hline { height: 1px; background: linear-gradient(to right, transparent, var(--gold), transparent); width: 100%; max-width: 360px; }
+    .deco-diamond { width: 8px; height: 8px; border: 1px solid var(--gold); transform: rotate(45deg); flex-shrink: 0; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 10px; padding: 14px 32px; border-radius: 2px;
+      font-family: 'Noto Serif TC', serif; font-size: 14px;
+      letter-spacing: 4px; cursor: pointer; transition: all 0.28s ease;
+      text-decoration: none; border: none;
+    }
+    .btn-gold { background: var(--gold); color: var(--ink); font-weight: 700; }
+    .btn-gold:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(184,150,62,0.35); }
+    .btn-outline { background: transparent; border: 1px solid rgba(184,150,62,0.45); color: var(--cream); font-weight: 400; }
+    .btn-outline:hover { border-color: var(--gold); background: rgba(184,150,62,0.08); }
+
+    /* ══════════════════════════════════════
+       畫面1：拼圖合體動畫
+    ══════════════════════════════════════ */
+    #screen-puzzle { gap: 36px; justify-content: center; }
+
+    .puzzle-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 4px;
+      width: 200px; height: 200px;
+    }
+    .puzzle-piece-final {
+      background: var(--gold);
+      opacity: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Noto Serif TC', serif;
+      font-size: 22px; color: var(--ink); font-weight: 700;
+    }
+    /* 各塊的滑入方向 */
+    .p1 { animation: slide-from-tl 0.7s ease 0.3s forwards; }
+    .p2 { animation: slide-from-tr 0.7s ease 0.6s forwards; }
+    .p3 { animation: slide-from-bl 0.7s ease 0.9s forwards; }
+    .p4 { animation: slide-from-br 0.7s ease 1.2s forwards; }
+
+    @keyframes slide-from-tl { from { opacity:0; transform: translate(-30px,-30px); } to { opacity:0.9; transform: translate(0,0); } }
+    @keyframes slide-from-tr { from { opacity:0; transform: translate( 30px,-30px); } to { opacity:0.9; transform: translate(0,0); } }
+    @keyframes slide-from-bl { from { opacity:0; transform: translate(-30px, 30px); } to { opacity:0.9; transform: translate(0,0); } }
+    @keyframes slide-from-br { from { opacity:0; transform: translate( 30px, 30px); } to { opacity:0.9; transform: translate(0,0); } }
+
+    /* 合體後光暈 */
+    .puzzle-glow {
+      position: absolute;
+      width: 200px; height: 200px;
+      border-radius: 2px;
+      box-shadow: 0 0 60px rgba(184,150,62,0.5);
+      opacity: 0;
+      animation: glow-in 1s ease 1.8s forwards;
+      pointer-events: none;
+    }
+    @keyframes glow-in { to { opacity: 1; } }
+
+    .puzzle-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
+
+    .puzzle-caption {
+      font-size: 12px; color: var(--muted); font-weight: 700; letter-spacing: 3px; text-align: center;
+      animation: fade-up 0.6s ease 2s both;
+    }
+
+    /* ══════════════════════════════════════
+       畫面2：融合照片 + 匹配度
+    ══════════════════════════════════════ */
+    #screen-photo { gap: 28px; justify-content: center; }
+
+    /* 照片容器（定位框風格）*/
+    .photo-wrap {
+      position: relative;
+      width: min(320px, 90vw);
+      aspect-ratio: 1 / 1;
+      background: #000;
+      border: 1px solid rgba(184,150,62,0.25);
+      overflow: hidden;
+    }
+    /* 玩家照片（底層，鏡像已在入口頁用 canvas 修正）*/
+    #player-photo {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      /* 黑白濾鏡 */
+      filter: grayscale(100%) brightness(0.85) contrast(1.15);
+    }
+    /* 湯川融合層 */
+    #yukawa-blend {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      mix-blend-mode: overlay;
+      filter: brightness(1.1) contrast(1.2);
+      transition: opacity 1.5s ease;
+    }
+    /* 掃描線（慢速
+    .scan-line-slow {
+      position: absolute; left: 0; right: 0; height: 2px;
+      background: linear-gradient(to right, transparent, var(--gold-light), transparent);
+      animation: scan-slow 8s ease-in-out infinite;
+      z-index: 10;
+    }
+    @keyframes scan-slow {
+      0%   { top: 0%;   opacity: 0; }
+      5%   { opacity: 0.8; }
+      95%  { opacity: 0.8; }
+      100% { top: 100%; opacity: 0; }
+    }
+   */
+
+    /* 掃描框四角 */
+    .frame-corner { position: absolute; width: 22px; height: 22px; z-index: 11; }
+    .frame-corner.tl { top:0; left:0;   border-top:2px solid var(--gold); border-left:2px solid var(--gold); }
+    .frame-corner.tr { top:0; right:0;  border-top:2px solid var(--gold); border-right:2px solid var(--gold); }
+    .frame-corner.bl { bottom:0; left:0;  border-bottom:2px solid var(--gold); border-left:2px solid var(--gold); }
+    .frame-corner.br { bottom:0; right:0; border-bottom:2px solid var(--gold); border-right:2px solid var(--gold); }
+    /* UI 疊字 */
+    .photo-ui-label {
+      position: absolute; z-index: 12;
+      font-size: 10px; letter-spacing: 3px;
+      background: rgba(0,0,0,0.55); padding: 3px 8px;
+    }
+    .photo-ui-label.top-left  { top: 12px;    left: 12px;  color: var(--gold); }
+    .photo-ui-label.bot-right { bottom: 12px; right: 12px; color: var(--gold-light); font-size: 13px; font-weight: 700; }
+    /* 傳送成功/失敗狀態文字 */
+    .status-label {
+      position: absolute; z-index: 12;
+      top: 12px; right: 12px;
+      font-size: 10px; letter-spacing: 2px;
+      padding: 3px 8px;
+      background: rgba(0,0,0,0.55);
+    }
+    .status-ok   { color: #5ecfa0; border: 1px solid #5ecfa0; }
+    .status-fail { color: #cf5e5e; border: 1px solid #cf5e5e; }
+
+    /* 匹配度量表 */
+    .match-section {
+      width: 100%; max-width: 320px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .match-header {
+      display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .match-title { font-size: 11px; letter-spacing: 4px; color: var(--gold); }
+    .match-pct {
+      font-family: 'Cinzel', serif;
+      font-size: 32px; color: var(--cream);
+      letter-spacing: 2px;
+    }
+    .match-bar-bg {
+      height: 4px; background: rgba(184,150,62,0.12);
+      border-radius: 2px; overflow: hidden;
+    }
+    .match-bar-fill {
+      height: 100%; background: linear-gradient(to right, var(--gold), var(--gold-light));
+      width: 0%; transition: width 2s ease 0.5s;
+    }
+
+    /* 結語卡片 */
+    .card-frame {
+      position: relative; padding: 28px 26px;
+      border: 1px solid rgba(184,150,62,0.22);
+      background: rgba(20,36,62,0.6);
+      backdrop-filter: blur(10px);
+      width: 100%; max-width: 420px;
+    }
+    .card-frame .c { position: absolute; width: 16px; height: 16px; }
+    .card-frame .c.tl { top:-1px; left:-1px; border-top:2px solid var(--gold); border-left:2px solid var(--gold); }
+    .card-frame .c.tr { top:-1px; right:-1px; border-top:2px solid var(--gold); border-right:2px solid var(--gold); }
+    .card-frame .c.bl { bottom:-1px; left:-1px; border-bottom:2px solid var(--gold); border-left:2px solid var(--gold); }
+    .card-frame .c.br { bottom:-1px; right:-1px; border-bottom:2px solid var(--gold); border-right:2px solid var(--gold); }
+
+    /* 傳送成功 / 失敗的結語框 */
+    .ending-box {
+      border-left: 3px solid var(--gold);
+      padding: 16px 20px;
+      background: rgba(28,49,84,0.5);
+      width: 100%; max-width: 420px;
+    }
+    .ending-box.fail-box { border-left-color: #9e4a4a; }
+    .ending-label { font-size: 10px; letter-spacing: 4px; color: var(--gold); margin-bottom: 10px; }
+    .ending-label.fail { color: #cf5e5e; }
+    .ending-text { font-size: 14px; line-height: 2.1; color: var(--cream-dark); letter-spacing: 1px; font-weight: 300; }
+
+    /* 介子結語 */
+    .meson-quote {
+      width: 100%; max-width: 420px;
+      padding: 20px 24px;
+      border-top: 1px solid rgba(184,150,62,0.2);
+      border-bottom: 1px solid rgba(184,150,62,0.2);
+      text-align: center;
+    }
+    .meson-quote p { font-size: 13px; line-height: 2.2; color: var(--cream-dark); letter-spacing: 1.5px; font-weight: 300; font-style: italic; }
+
+    /* 按鈕群 */
+    .btn-group { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+    /* 動畫 */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fu-1 { animation: fade-up 0.6s ease 0.1s both; }
+    .fu-2 { animation: fade-up 0.6s ease 0.3s both; }
+    .fu-3 { animation: fade-up 0.6s ease 0.5s both; }
+    .fu-4 { animation: fade-up 0.6s ease 0.7s both; }
+    .fu-5 { animation: fade-up 0.6s ease 0.9s both; }
+    .fu-6 { animation: fade-up 0.6s ease 1.1s both; }
+  </style>
+</head>
+<body>
+
+<div id="particles"></div>
+<div class="progress-bar"><div class="progress-fill"></div></div>
+<div class="progress-dots">
+  <div class="dot" title="展品一"></div>
+  <div class="dot" title="展品二"></div>
+  <div class="dot" title="展品三"></div>
+  <div class="dot" title="展品四"></div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     畫面1：拼圖合體
+══════════════════════════════════════ -->
+<div class="screen active" id="screen-puzzle">
+
+  <div style="text-align:center; display:flex; flex-direction:column; gap:12px; align-items:center;" class="fu-1">
+    <span class="label">IDENTITY RECONSTRUCTION</span>
+    <h2 class="section-title">四片拼圖，合而為一</h2>
+    <p class="body-text" style="max-width:320px;">
+      你在湯川的時代撿回了四塊碎片。<br>現在，把它們拼起來。
+    </p>
+  </div>
+
+  <div class="puzzle-wrap fu-2">
+    <div class="puzzle-glow"></div>
+    <div class="puzzle-grid">
+      <div class="puzzle-piece-final p1">一</div>
+      <div class="puzzle-piece-final p2">二</div>
+      <div class="puzzle-piece-final p3">三</div>
+      <div class="puzzle-piece-final p4">四</div>
+    </div>
+  </div>
+
+  <p class="puzzle-caption">識別證碎片重組完成</p>
+
+  <div style="display:flex; flex-direction:column; align-items:center; gap:10px; animation: fade-up 0.8s ease 2.2s both; opacity:0;" id="puzzle-next">
+    <div class="vline" style="height:32px;"></div>
+    <button class="btn btn-gold" onclick="showPhoto()">
+      ✦ &ensp; 揭 曉 靈 魂 融 合 照
+    </button>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════
+     畫面2：融合照片 + 匹配度 + 結語
+══════════════════════════════════════ -->
+<div class="screen" id="screen-photo">
+
+  <div style="text-align:center; display:flex; flex-direction:column; gap:10px; align-items:center;" class="fu-1">
+    <span class="label">SOUL RESONANCE · FINAL RESULT</span>
+    <h2 class="section-title">靈魂融合完成</h2>
+  </div>
+
+  <!-- 融合照片 -->
+  <div class="photo-wrap fu-2" id="photo-area">
+    <!-- 底層：玩家照（黑白）-->
+    <img id="player-photo" src="" alt="你的靈魂影像">
+    <!-- 上層：湯川融合 -->
+    <img id="yukawa-blend" src="../assets/images/yukawa.png" alt="湯川秀樹" style="opacity:0;">
+    <!-- 掃描線 -->
+    <!-- <div class="scan-line-slow"></div> -->
+
+    <!-- 掃描定位框四角 -->
+    <div class="frame-corner tl"></div>
+    <div class="frame-corner tr"></div>
+    <div class="frame-corner bl"></div>
+    <div class="frame-corner br"></div>
+    <!-- UI 疊字 -->
+    <div class="photo-ui-label top-left" id="status-label">● SCANNING</div>
+    <div class="photo-ui-label bot-right" id="sync-label">SYNC: —%</div>
+  </div>
+
+  <!-- 匹配度量表 -->
+  <div class="match-section fu-3">
+    <div class="match-header">
+      <span class="match-title">靈 魂 匹 配 度</span>
+      <span class="match-pct" id="match-pct-display">—%</span>
+    </div>
+    <div class="match-bar-bg">
+      <div class="match-bar-fill" id="match-bar"></div>
+    </div>
+  </div>
+
+  <!-- 傳送結局（成功/失敗，由 JS 注入）-->
+  <div class="ending-box fu-4" id="ending-box">
+    <p class="ending-label" id="ending-label">⋯</p>
+    <p class="ending-text" id="ending-text">計算中⋯</p>
+  </div>
+
+  <!-- 介子哲學結語 -->
+  <div class="meson-quote fu-5">
+    <p>
+      質子與中子，本性不同、甚至互相排斥，<br>
+      卻能在交換介子的那一刻，合而為一。<br><br>
+      跨越時空的你與湯川，<br>
+      看似兩個獨立且遙遠的靈魂，<br>
+      但在你深入體驗他的場景、<br>回應他的生命問題時，<br>
+      你們之間已產生了一種不可見的介子流動。<br><br>
+      <strong style="color:var(--gold-light); font-style:normal;">你中有他，他亦有你。</strong>
+    </p>
+  </div>
+
+  <!-- 按鈕 -->
+  <div class="btn-group fu-6">
+    <button class="btn btn-gold" onclick="savePhoto()">
+      ↓ &ensp; 儲 存 融 合 照
+    </button>
+    <button class="btn btn-outline" onclick="location.href='../index.html'">
+      ↺ &ensp; 重 新 旅 程
+    </button>
+  </div>
+
+  <div class="vline" style="height:40px; margin-top:8px;" class="fu-6"></div>
+
+</div>
+
+
+<!-- html2canvas（用於儲存照片）-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+  /* 粒子 */
+  (function() {
+    const c = document.getElementById('particles');
+    for (let i = 0; i < 22; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.animationDuration = (7 + Math.random() * 10) + 's';
+      p.style.animationDelay = (Math.random() * 9) + 's';
+      const sz = (1 + Math.random() * 2) + 'px';
+      p.style.width = p.style.height = sz;
+      c.appendChild(p);
+    }
+  })();
+
+  /* 畫面切換 */
+  function goToScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  /* 拼圖頁：2.4 秒後自動出現按鈕 */
+  setTimeout(() => {
+    const el = document.getElementById('puzzle-next');
+    if (el) el.style.opacity = '1';
+  }, 2400);
+
+  /* ── 計算匹配度 ──
+     App.jsx 公式：(totalScore / questions.length) * 100
+     4 題，最高分：每題 1.0 → totalScore 最大 = 4.0
+     similarity = (score / 4) * 100
+  */
+  function calcSimilarity() {
+    const score = parseFloat(sessionStorage.getItem('score') || '0');
+    const raw = (score / 4) * 100;
+    return Math.min(Math.round(raw), 100);
+  }
+
+  /* ── 照片顯示畫面 ── */
+  function showPhoto() {
+    goToScreen('screen-photo');
+
+    const similarity = calcSimilarity();
+    const isSuccess  = similarity >= 75;
+    const photo      = sessionStorage.getItem('playerPhoto') || '';
+
+    /* 玩家照片（鏡像已在 index.html 用 canvas scaleX(-1) 修正，直接顯示即可）*/
+    const playerImg = document.getElementById('player-photo');
+    if (photo) {
+      playerImg.src = photo;
+    } else {
+      /* 無照片時顯示佔位 */
+      playerImg.style.display = 'none';
+      document.getElementById('photo-area').style.background = 'rgba(28,49,84,0.8)';
+    }
+
+    /* 湯川融合透明度：similarity / 180（與 App.jsx 一致）*/
+    const yukawa = document.getElementById('yukawa-blend');
+    setTimeout(() => {
+      yukawa.style.opacity = String(similarity / 180);
+    }, 600);
+
+    /* 照片 UI 文字 */
+    const statusEl = document.getElementById('status-label');
+    const syncEl   = document.getElementById('sync-label');
+    setTimeout(() => {
+      statusEl.textContent = isSuccess ? '● SOUL MATCHING SUCCESSFUL' : '○ MATCH FAILED';
+      statusEl.className   = 'photo-ui-label top-left ' + (isSuccess ? 'status-ok' : 'status-fail');
+      syncEl.textContent   = 'SYNC: ' + similarity + '%';
+    }, 800);
+
+    /* 匹配度量表 */
+    setTimeout(() => {
+      document.getElementById('match-pct-display').textContent = similarity + '%';
+      document.getElementById('match-bar').style.width = similarity + '%';
+    }, 600);
+
+    /* 結局文字 */
+    const endingBox   = document.getElementById('ending-box');
+    const endingLabel = document.getElementById('ending-label');
+    const endingText  = document.getElementById('ending-text');
+
+    if (isSuccess) {
+      endingLabel.textContent = '◆ 時 空 傳 送 授 權 成 功';
+      endingText.innerHTML =
+        `靈魂同步率已達 ${similarity}%，時光機確認你與湯川秀樹之間存在有效的介子共振。<br><br>` +
+        '識別證已重建完成。傳送門將於三秒後開啟——<br>歡迎回到你自己的時空，探員。';
+    } else {
+      endingBox.classList.add('fail-box');
+      endingLabel.textContent = '◆ 時 空 傳 送 授 權 失 敗';
+      endingLabel.classList.add('fail');
+      endingText.innerHTML =
+        `靈魂同步率僅達 ${similarity}%，介子共振強度不足，時光機無法完成定位。<br><br>` +
+        '也許你與湯川走的是截然不同的路——<br>但介子的本質告訴我們：<strong style="color:var(--gold-light);">不同本性之間的流動，本身就是一種連結。</strong><br><br>' +
+        '你將帶著這段旅程的記憶，留在原本的時空。';
+    }
+  }
+
+  /* ── 儲存融合照片 ── */
+  async function savePhoto() {
+    const element = document.getElementById('photo-area');
+    if (!element) return;
+    try {
+      const canvas = await html2canvas(element, { useCORS: true, scale: 2 });
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = 'yukawa-soul-fusion.png';
+      link.click();
+    } catch(e) {
+      alert('儲存失敗，請截圖保存。');
+    }
+  }
+</script>
+</body>
+</html>

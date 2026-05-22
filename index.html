@@ -110,7 +110,7 @@
     .invite-card { width: 100%; max-width: 400px; animation: fade-up 1s ease 0.5s both; }
     .invite-inner { padding: 32px 28px; text-align: center; display: flex; flex-direction: column; gap: 18px; align-items: center; }
     .invite-badge { display: inline-block; padding: 4px 16px; border: 1px solid var(--gold); font-size: 10px; letter-spacing: 4px; color: var(--gold); }
-    .invite-to { font-size: 12px; letter-spacing: 3px; color: var(--muted); }
+    .invite-to { font-size: 12px; letter-spacing: 3px; color: var(--muted); font-weight: 700;}
     .invite-title-line { display: flex; align-items: center; gap: 12px; width: 100%; }
     .invite-main-text { font-size: 14px; color: var(--cream-dark); line-height: 2; letter-spacing: 1.5px; font-weight: 300; }
     .invite-bottom { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 32px; animation: fade-up 1s ease 0.8s both; }
@@ -133,6 +133,7 @@
       position: absolute; left: 0; right: 0; height: 2px;
       background: linear-gradient(to right, transparent, var(--gold-light), transparent);
       top: 0; animation: beam 2.4s ease-in-out infinite;
+      z-index: 4;
     }
     @keyframes beam {
       0%   { top: 0%;   opacity: 0; }
@@ -140,12 +141,12 @@
       95%  { opacity: 1; }
       100% { top: 100%; opacity: 0; }
     }
-    .cam-corner { position: absolute; width: 24px; height: 24px; }
+    .cam-corner { position: absolute; width: 24px; height: 24px; z-index: 5; }
     .cam-corner.tl { top:0; left:0;   border-top:2px solid var(--gold); border-left:2px solid var(--gold); }
     .cam-corner.tr { top:0; right:0;  border-top:2px solid var(--gold); border-right:2px solid var(--gold); }
     .cam-corner.bl { bottom:0; left:0;  border-bottom:2px solid var(--gold); border-left:2px solid var(--gold); }
     .cam-corner.br { bottom:0; right:0; border-bottom:2px solid var(--gold); border-right:2px solid var(--gold); }
-    .scan-note { font-size: 12px; color: var(--muted); letter-spacing: 2px; text-align: center; }
+    .scan-note { font-size: 12px; color: var(--muted); font-weight: 700; letter-spacing: 2px; text-align: center; }
     .scan-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 
     /* 畫面3 */
@@ -168,7 +169,7 @@
       50%       { opacity: 1;   transform: scale(1.1); }
     }
     .assigned-name { font-family: 'Cinzel', serif; font-size: clamp(20px,4vw,32px); color: var(--gold-light); letter-spacing: 4px; }
-    .assigned-desc { font-size: 12px; color: var(--muted); letter-spacing: 3px; }
+    .assigned-desc { font-size: 12px; color: var(--muted); font-weight: 700; letter-spacing: 3px; }
     .match-bar-bg { height: 3px; background: rgba(184,150,62,0.15); border-radius: 2px; overflow: hidden; width: 100%; max-width: 280px; }
     .match-bar-fill { height: 100%; background: var(--gold); width: 0%; transition: width 1.8s ease 0.3s; }
     .story-box {
@@ -190,14 +191,41 @@
       70%  { transform: scale(1.05); }
       100% { transform: scale(1);   opacity: 1; }
     }
+
+    /* === HUD 定位框優化樣式 === */
+    .hud-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      z-index: 2;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .hud-overlay.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hud-guide-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.45; 
+      /* 🛠️ 已移除 transform: scaleX(-1); 將圖框翻轉回原始正常方向 */
+      filter: 
+        drop-shadow(0 0 8px rgba(184, 150, 62, 0.6))
+        brightness(1.3);
+    }
+    #cam-text {
+      position: relative;
+      z-index: 3;
+    }
   </style>
 </head>
 <body>
 
 <div id="particles"></div>
 
-
-<!-- 畫面1：邀請函 -->
 <div class="screen active" id="screen-welcome">
   <div class="invite-top">
     <div class="vline" style="height:60px;"></div>
@@ -231,7 +259,7 @@
           <div class="deco-diamond"></div>
           <div class="hline"></div>
         </div>
-        <p style="font-size:11px; color:var(--muted); letter-spacing:3px;">時光機管理局 · 謹啟</p>
+        <p style="font-size:11px; color:var(--muted); font-weight: 700; letter-spacing:3px;">時光機管理局 · 謹啟</p>
       </div>
     </div>
   </div>
@@ -240,13 +268,11 @@
     <button class="btn btn-gold" onclick="goToScreen('screen-scan')">
       ✦ &ensp; 進 行 靈 魂 掃 描
     </button>
-    <p style="font-size:11px; color:var(--muted); letter-spacing:2px;">掃描臉部以啟動身分分配系統</p>
+    <p style="font-size:11px; color:var(--muted); font-weight: 700; letter-spacing:2px;">掃描臉部以啟動身分分配系統</p>
     <div class="vline" style="height:48px; margin-top:8px;"></div>
   </div>
 </div>
 
-
-<!-- 畫面2：靈魂掃描 -->
 <div class="screen" id="screen-scan">
   <div class="scan-header">
     <span class="label">SOUL SCANNING SYSTEM</span>
@@ -259,8 +285,13 @@
   <div class="camera-wrap">
     <div class="camera-box">
       <video id="video-feed" autoplay playsinline muted></video>
-      <div class="cam-placeholder-icon" id="cam-icon">👤</div>
-      <span id="cam-text" style="font-size:12px; color:var(--muted); letter-spacing:2px; position:relative;">請對準框內</span>
+      
+      <div class="hud-overlay" id="face-guide-overlay">
+        <img src="./assets/images/frame.png" alt="定位參考" class="hud-guide-image">
+      </div>
+      
+      <div id="cam-icon" style="display:none;"></div>
+      <span id="cam-text" style="font-size:12px; color:var(--muted); font-weight: 700; letter-spacing:2px;">請對準框內</span>
       <div class="scan-beam"></div>
     </div>
     <div class="cam-corner tl"></div>
@@ -277,49 +308,40 @@
   </div>
 </div>
 
-
-<!-- 畫面3：分配結果 -->
 <div class="screen" id="screen-result">
-
   <div style="display:flex; flex-direction:column; gap:10px; align-items:center; animation: fade-up 0.6s ease both;">
     <span class="label">IDENTITY ASSIGNED</span>
     <p class="body-text" style="font-size:13px; letter-spacing:3px;">靈 魂 掃 描 完 成</p>
   </div>
 
-  <!-- 你 ⇌ 湯川 -->
   <div style="display:flex; align-items:center; gap:20px; animation: fade-up 0.8s ease 0.3s both;">
     <div>
       <div id="result-photo-slot" class="result-photo-placeholder">👤</div>
-      <p style="font-size:10px; color:var(--muted); letter-spacing:2px; text-align:center; margin-top:8px;">你的靈魂</p>
+      <p style="font-size:10px; color:var(--muted); font-weight: 700; letter-spacing:2px; text-align:center; margin-top:8px;">你的靈魂</p>
     </div>
     <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
       <div class="result-arrow">⇌</div>
       <p style="font-size:10px; color:var(--gold); letter-spacing:2px;">介子流動</p>
     </div>
     <div>
-      <div style="width:140px; height:140px; background:rgba(28,49,84,0.7); border:1px solid rgba(184,150,62,0.35); display:flex; align-items:center; justify-content:center; font-size:15px; color:var(--muted); letter-spacing:2px; text-align:center; line-height:2;">
-        湯川<br>秀樹
-      </div>
-      <p style="font-size:10px; color:var(--muted); letter-spacing:2px; text-align:center; margin-top:8px;">分配對象</p>
+      <img src="./assets/images/yukawa.png" alt="湯川秀樹" style="width:140px; height:140px; object-fit:cover; border:1px solid rgba(184,150,62,0.35); display:block; background:rgba(28,49,84,0.7);">
+      <p style="font-size:10px; color:var(--muted); font-weight: 700; letter-spacing:2px; text-align:center; margin-top:8px;">分配對象</p>
     </div>
   </div>
 
-  <!-- 分配名稱 -->
   <div style="text-align:center; animation: pop-in 0.7s ease 0.6s both;">
     <p class="assigned-desc">您被分配到</p>
     <h2 class="assigned-name">湯川秀樹的人生</h2>
     <p class="assigned-desc" style="margin-top:6px;">日本物理學家 · 1949 年諾貝爾獎得主</p>
   </div>
 
-  <!-- 靈魂頻率 bar -->
   <div style="display:flex; flex-direction:column; align-items:center; gap:8px; animation: fade-up 0.7s ease 0.9s both;">
     <div class="match-bar-bg">
       <div class="match-bar-fill" id="match-fill"></div>
     </div>
-    <p style="font-size:11px; color:var(--muted); letter-spacing:2px;">初始靈魂頻率 — 完成旅程後解鎖完整匹配度</p>
+    <p style="font-size:11px; color:var(--muted); font-weight: 700; letter-spacing:2px;">初始靈魂頻率 — 完成旅程後解鎖完整匹配度</p>
   </div>
 
-  <!-- 劇情：識別證遺失 -->
   <div class="story-box" id="story-block">
     <p class="story-label">⚠ 系 統 警 告</p>
     <p>
@@ -335,9 +357,7 @@
   <button class="btn btn-gold" style="animation: fade-up 0.8s ease 1.5s both;" onclick="startJourney()">
     ✦ &ensp; 開 始 時 光 之 旅
   </button>
-
 </div>
-
 
 <canvas id="snap-canvas" style="display:none;"></canvas>
 
@@ -366,14 +386,23 @@
 
   /* 相機 */
   let stream = null;
+
   async function startCamera() {
     try {
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
       const v = document.getElementById('video-feed');
       v.srcObject = stream;
       v.style.display = 'block';
-      document.getElementById('cam-icon').style.display = 'none';
-      document.getElementById('cam-text').style.display = 'none';
+      
+      const camIcon = document.getElementById('cam-icon');
+      if (camIcon) camIcon.style.display = 'none';
+      
+      const camText = document.getElementById('cam-text');
+      if (camText) camText.style.display = 'none';
+      
+      // === 顯示 HUD 定位框 ===
+      const overlay = document.getElementById('face-guide-overlay');
+      if (overlay) overlay.classList.add('show');
     } catch(e) {
       alert('無法開啟相機。請允許相機權限，或點「略過」繼續。');
     }
@@ -382,22 +411,37 @@
   function capturePhoto() {
     const v = document.getElementById('video-feed');
     if (!stream || v.style.display === 'none') { skipCamera(); return; }
+    
+    // 拍照前先隱藏定位層
+    const overlay = document.getElementById('face-guide-overlay');
+    if (overlay) overlay.classList.remove('show');
+    
     const canvas = document.getElementById('snap-canvas');
     canvas.width = v.videoWidth || 260;
     canvas.height = v.videoHeight || 260;
     const ctx = canvas.getContext('2d');
+    
+    // 畫布翻轉（鏡像照片處理）
     ctx.translate(canvas.width, 0);
     ctx.scale(-1, 1);
     ctx.drawImage(v, 0, 0);
+    
     const photo = canvas.toDataURL('image/jpeg', 0.82);
     sessionStorage.setItem('playerPhoto', photo);
-    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    
+    if (stream) { 
+      stream.getTracks().forEach(t => t.stop()); 
+      stream = null; 
+    }
     showResult(photo);
   }
 
   function skipCamera() {
     sessionStorage.setItem('playerPhoto', '');
-    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    if (stream) { 
+      stream.getTracks().forEach(t => t.stop()); 
+      stream = null; 
+    }
     showResult(null);
   }
 
@@ -414,7 +458,7 @@
       slot.replaceWith(img);
     }
 
-    sessionStorage.setItem('point', '0');
+    sessionStorage.setItem('score', '0');
     ['puzzle1','puzzle2','puzzle3','puzzle4'].forEach(k => sessionStorage.setItem(k, 'false'));
 
     setTimeout(() => { document.getElementById('match-fill').style.width = '15%'; }, 400);
