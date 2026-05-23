@@ -234,14 +234,16 @@
       animation: fade-up 0.8s ease 0.3s both;
     }
 
-    /* === HUD 定位框優化樣式 === */
+/* === HUD 定位框優化樣式 === */
     .hud-overlay {
       position: absolute;
       inset: 0;
       display: none;
-      z-index: 2;
+      z-index: 10;          /* 🛠️ 關鍵修正：調高層級，確保圖片絕對能壓在 video (預設層級) 的最上方 */
       pointer-events: none;
       overflow: hidden;
+      width: 100%;          /* 🛠️ 確保寬度填滿 260px */
+      height: 100%;         /* 🛠️ 確保高度填滿 260px */
     }
     .hud-overlay.show {
       display: flex;
@@ -251,16 +253,16 @@
     .hud-guide-image {
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      opacity: 0.45; 
-      /* 🛠️ 已移除 transform: scaleX(-1); 將圖框翻轉回原始正常方向 */
+      object-fit: fill;     /* 🛠️ 讓框線圖強制縮放到 260x260 的正方形內，五官才能對齊 */
+      opacity: 0.85;        /* 🛠️ 提高透明度，讓綠色/白色的科技線條無比清晰 */
+      mix-blend-mode: screen; /* 🛠️ 自動過濾掉圖片的純黑背景，只留下亮色科技線條 */
       filter: 
         drop-shadow(0 0 8px rgba(184, 150, 62, 0.6))
-        brightness(1.3);
+        brightness(1.4);    /* 🛠️ 稍微加亮，讓它在暗色相機畫面上更明顯 */
     }
     #cam-text {
       position: relative;
-      z-index: 3;
+      z-index: 12;          /* 🛠️ 確保提示文字「請對準框內」也能浮在最上面 */
     }
   </style>
 </head>
