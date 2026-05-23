@@ -192,6 +192,48 @@
       100% { transform: scale(1);   opacity: 1; }
     }
 
+    /* === 介紹影片畫面 === */
+    #screen-intro { gap: 0; justify-content: center; }
+
+    .intro-video-wrap {
+      position: relative;
+      width: 100%; max-width: 480px;
+      background: #000;
+      border: 1px solid rgba(184,150,62,0.2);
+    }
+    .intro-video-wrap video {
+      width: 100%; display: block;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+    }
+    .intro-cover {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px;
+      background: rgba(20,36,62,0.82);
+      transition: opacity 0.5s ease;
+      cursor: pointer;
+    }
+    .intro-cover.hidden { opacity: 0; pointer-events: none; }
+    .play-circle {
+      width: 64px; height: 64px; border-radius: 50%;
+      border: 2px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; color: var(--gold);
+      transition: background 0.2s, transform 0.2s;
+    }
+    .intro-cover:hover .play-circle { background: rgba(184,150,62,0.15); transform: scale(1.08); }
+    .intro-cover p { font-size: 11px; letter-spacing: 4px; color: var(--gold-light); }
+
+    .intro-bottom {
+      width: 100%; max-width: 480px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 14px;
+      margin-top: 28px;
+      animation: fade-up 0.8s ease 0.3s both;
+    }
+
     /* === HUD 定位框優化樣式 === */
     .hud-overlay {
       position: absolute;
@@ -226,7 +268,39 @@
 
 <div id="particles"></div>
 
-<div class="screen active" id="screen-welcome">
+<div class="screen active" id="screen-intro">
+  <div style="text-align:center; display:flex; flex-direction:column; gap:14px; align-items:center; margin-bottom:24px; animation: fade-up 0.8s ease both;">
+    <span class="label">TEMPORAL AGENT PROGRAM · 2026</span>
+    <h1 class="big-title">時空探員之旅</h1>
+    <p class="zh-title">科學偉人·時空穿越</p>
+  </div>
+
+  <div class="intro-video-wrap">
+    <!--
+      【影片放置說明】
+      將 intro.mp4 放進 assets/videos/ 資料夾即可。
+    -->
+    <video id="intro-video" preload="metadata" playsinline>
+      <source src="assets/videos/intro.mp4" type="video/mp4">
+    </video>
+
+    <!-- 播放前封面，點擊後播放 -->
+    <div class="intro-cover" id="intro-cover" onclick="playIntro()">
+      <div class="play-circle">▶</div>
+      <p>點擊播放介紹影片</p>
+    </div>
+  </div>
+
+  <div class="intro-bottom">
+    <button class="btn btn-gold" onclick="goToScreen('screen-welcome')">
+      ✦ &ensp;或 直 接 進 入 邀 請 函
+    </button>
+    <!-- <p style="font-size:11px; color:var(--muted); font-weight:700; letter-spacing:2px;">或觀看影片後繼續</p> -->
+    <div class="vline" style="height:40px; margin-top:4px;"></div>
+  </div>
+</div>
+
+<div class="screen" id="screen-welcome">
   <div class="invite-top">
     <div class="vline" style="height:60px;"></div>
     <span class="label">TEMPORAL AGENT PROGRAM · 2026</span>
@@ -249,8 +323,7 @@
         <p class="invite-main-text">
           您手中這封邀請函<br>
           是一張穿越時空的通行證。<br><br>
-          請掃描 QR Code 登入時光機，<br>
-          進行靈魂掃描，<br>
+          請進入時光機掃描靈魂，<br>
           系統將為您分配一段<br>
           跨越時代的人生。
         </p>
@@ -377,8 +450,23 @@
     }
   })();
 
+  /* 介紹影片控制 */
+  function playIntro() {
+    const video = document.getElementById('intro-video');
+    const cover = document.getElementById('intro-cover');
+    cover.classList.add('hidden');
+    video.play();
+    // 播完自動跳到邀請函畫面
+    video.addEventListener('ended', () => {
+      goToScreen('screen-welcome');
+    }, { once: true });
+  }
+
   /* 畫面切換 */
   function goToScreen(id) {
+    // 切換畫面時暫停影片，避免背景繼續播放
+    const introVideo = document.getElementById('intro-video');
+    if (introVideo && !introVideo.paused) introVideo.pause();
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     window.scrollTo(0, 0);
