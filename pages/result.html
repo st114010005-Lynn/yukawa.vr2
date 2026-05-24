@@ -408,7 +408,7 @@
   <!-- 按鈕 -->
   <div class="btn-group fu-6">
     <button class="btn btn-gold" onclick="savePhoto()">
-      ↓ &ensp; 請 截 圖 保 存 融 合 照
+      ↓ &ensp; 保 存 融 合 照
     </button>
     <button class="btn btn-outline" onclick="location.href='../index.html'">
       ↺ &ensp; 重 新 旅 程
@@ -542,18 +542,111 @@
     }
   }
 
-  /* ── 儲存融合照片 ── */
-  async function savePhoto() {
-    const element = document.getElementById('photo-area');
-    if (!element) return;
+/* ── 儲存融合照片 ── */
+  function savePhoto() {
+    const playerImg = document.getElementById('player-photo');
+    const yukawaImg = document.getElementById('yukawa-blend');
+    const statusEl = document.getElementById('status-label');
+    const syncEl = document.getElementById('sync-label');
+
     try {
-      const canvas = await html2canvas(element, { useCORS: true, scale: 2 });
+      // 1. 建立一個 800x800 的高畫質正方形畫布（1:1 絕不變形）
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 800;
+      const ctx = canvas.getContext('2d');
+
+      // 2. 塗上深藍色底色，與網頁的時空背景完全一致
+      ctx.fillStyle = '#14243e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 3. 📸 繪製第一層：玩家相片（注入黑白濾鏡效果並修正比例）
+      if (playerImg && playerImg.style.display !== 'none' && playerImg.src) {
+        // 💥 核心修正：直接在 Canvas 啟用原生黑白與亮度濾鏡，完美還原網頁風格且不崩潰
+        ctx.filter = 'grayscale(100%) brightness(0.85)';
+
+        // --- 💥 新增比例計算代碼 (保持比例裁剪填滿) ---
+        // 獲取照片原始尺寸
+        const imgWidth = playerImg.naturalWidth;
+        const imgHeight = playerImg.naturalHeight;
+        
+        // 計算縮放比例以填滿 800x800 的畫布
+        const scale = Math.max(800 / imgWidth, 800 / imgHeight);
+        
+        // 計算繪製時的起點坐標，使其居中裁剪
+        const drawWidth = imgWidth * scale;
+        const drawHeight = imgHeight * scale;
+        const x = (800 - drawWidth) / 2;
+        const y = (800 - drawHeight) / 2;
+
+        // 使用計算好的坐標和尺寸繪製照片（不再使用全畫布拉伸）
+        ctx.drawImage(playerImg, x, y, drawWidth, drawHeight);
+        // ----------------------------------------------
+
+        ctx.filter = 'none'; // 畫完立刻關閉濾鏡，避免影響後續圖層
+      }
+
+      // 4. 🌀 繪製第二層：湯川相片（半透明融合）
+      if (yukawaImg && yukawaImg.src) {
+        // 抓取網頁當下的不透明度（例如 0.25 或 0.50）
+        const opacity = parseFloat(window.getComputedStyle(yukawaImg).opacity) || 0.5;
+        ctx.globalAlpha = opacity;
+        ctx.drawImage(yukawaImg, 0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 1.0; // 還原不透明度
+      }
+
+      // 5. 🛠️ 手工繪製：完美的金黃色科技感直角邊框
+      ctx.strokeStyle = '#b8963e'; // 金色邊框
+      ctx.lineWidth = 8;           // 線條粗細
+      const len = 40;              // 直角長度
+      const pad = 4;               // 內縮邊距
+
+      // 左上、右上、左下、右下四個直角
+      ctx.beginPath(); ctx.moveTo(pad, pad + len); ctx.lineTo(pad, pad); ctx.lineTo(pad + len, pad); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(800 - pad, pad + len); ctx.lineTo(800 - pad, pad); ctx.lineTo(800 - pad - len, pad); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(pad, 800 - pad - len); ctx.lineTo(pad, 800 - pad); ctx.lineTo(pad + len, 800 - pad); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(800 - pad, 800 - pad - len); ctx.lineTo(800 - pad, 800 - pad); ctx.lineTo(800 - pad - len, 800 - pad); ctx.stroke();
+
+      // 6. 🛠️ 手工繪製：左上角紅框狀態標籤（例如 ● MATCH FAILED）
+      const statusText = statusEl ? statusEl.textContent.trim() : '● MATCH FAILED';
+      ctx.font = 'bold 22px "Noto Serif TC", serif';
+      const textWidth = ctx.measureText(statusText).width;
+      
+      // 畫紅框背景
+      ctx.fillStyle = 'rgba(235, 94, 85, 0.15)'; // 半透明紅
+      ctx.fillRect(25, 25, textWidth + 30, 45);
+      ctx.strokeStyle = '#eb5e55'; // 紅色邊框
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(25, 25, textWidth + 30, 45);
+      
+      // 寫紅色文字
+      ctx.fillStyle = '#eb5e55';
+      ctx.textAlign = 'left';
+      ctx.fillText(statusText, 40, 56);
+
+      // 7. 🛠️ 手工繪製：右下角半透明 SYNC 趴數標籤
+      const syncText = syncEl ? syncEl.textContent.trim() : 'SYNC: 50%';
+      ctx.font = 'bold 26px "Cinzel", serif';
+      const syncWidth = ctx.measureText(syncText).width;
+
+      // 畫右下角半透明黑底色塊
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(800 - syncWidth - 55, 800 - 75, syncWidth + 30, 50);
+      
+      // 寫金黃色趴數文字
+      ctx.fillStyle = '#d4af6a';
+      ctx.textAlign = 'right';
+      ctx.fillText(syncText, 800 - 40, 800 - 40);
+
+      // 8. 💾 導出並下載圖片
       const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.href = dataUrl;
       link.download = 'yukawa-soul-fusion.png';
       link.click();
+
     } catch(e) {
+      console.error(e);
       alert('儲存失敗，請截圖保存。');
     }
   }
