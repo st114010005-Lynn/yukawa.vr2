@@ -86,7 +86,7 @@
     /* ══════════════════════════════════════
        畫面1：拼圖合體動畫
     ══════════════════════════════════════ */
-    #screen-puzzle { gap: 36px; justify-content: center; }
+    #screen-puzzle { gap: 20px; justify-content: center; padding-top: 36px; }
 
     .puzzle-grid {
       display: grid;
@@ -313,7 +313,7 @@
     </p>
   </div>
 
-  <div class="puzzle-wrap fu-2">
+  <!-- <div class="puzzle-wrap fu-2">
     <div class="puzzle-glow"></div>
     <div class="puzzle-grid">
       <div class="puzzle-piece-final p1">一</div>
@@ -323,18 +323,23 @@
     </div>
   </div>
 
-  <p class="puzzle-caption">識別證碎片重組完成</p>
+  <p class="puzzle-caption">識別證碎片重組完成</p> -->
 
-  <div style="text-align: center; margin-top: 10px;">
-    <video src="../assets/videos/puzzle.mp4" autoplay loop muted playsinline style="width: 800px; height: auto; opacity: 0.9;"></video>
+  <div style="width: 100%; max-width: 480px; margin-top: 0;">
+    <video id="puzzle-video"
+      src="../assets/videos/puzzle.mp4"
+      autoplay muted playsinline
+      style="width: 100%; aspect-ratio: 16/9; display: block; opacity: 0.9;"
+      onended="showPhoto()">
+    </video>
   </div>
 
-  <div style="display:flex; flex-direction:column; align-items:center; gap:10px; animation: fade-up 0.8s ease 2.2s both; opacity:0;" id="puzzle-next">
+  <!-- <div style="display:flex; flex-direction:column; align-items:center; gap:10px; animation: fade-up 0.8s ease 2.2s both; opacity:0;" id="puzzle-next">
     <div class="vline" style="height:32px;"></div>
     <button class="btn btn-gold" onclick="showPhoto()">
       ✦ &ensp; 揭 曉 靈 魂 融 合 照
     </button>
-  </div>
+  </div> -->
 
 </div>
 
